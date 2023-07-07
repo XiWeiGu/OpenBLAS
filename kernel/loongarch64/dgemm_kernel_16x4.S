@@ -28,6 +28,30 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "common.h"
 
+/*********************************************************************
+* 2023/06/28 guxiwei
+*        BLASTEST               : OK
+*        CTEST                  : OK
+*        TEST                   : OK
+*
+*
+* 2023/06/28 guxiwei
+* Parameter:
+*       DGEMM_DEFAULT_UNROLL_N  4
+*       DGEMM_DEFAULT_UNROLL_M  16
+*       DGEMM_DEFAULT_P         32
+*       DGEMM_DEFAULT_Q         152
+*	A_PR1			512
+*	B_PR1			256
+*
+*
+* Performance at 5000x5000x5000:
+*       1 thread:       35.4 GFLOPS
+*       2 threads:      70.0 GFLOPS
+*       3 threads:     101.5 GFLOPS
+*       4 threads:     130.8 GFLOPS
+*********************************************************************/
+
 /* Function parameters */
 #define M      $r4   // param 1: bm
 #define N      $r5   // param 2: bn
@@ -68,31 +92,199 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define U4     $xr4
 #define U5     $xr5
 #define U6     $xr6
-#define D0     $xr7
-#define D1     $xr8
-#define D2     $xr9
-#define D3     $xr10
-#define D4     $xr11
-#define D5     $xr12
-#define D6     $xr13
-#define D7     $xr14
-#define D8     $xr15
-#define D9     $xr16
-#define D10    $xr17
-#define D11    $xr18
-#define D12    $xr19
-#define D13    $xr20
-#define D14    $xr21
-#define D15    $xr22
-#define VALPHA $xr23
+#define U7     $xr7
+#define U8     $xr8
+#define U9     $xr9
+#define U10    $xr10
+#define U11    $xr11
+#define U12    $xr12
+#define U13    $xr13
+#define U14    $xr14
+#define U15    $xr15
+#define D0     $xr16
+#define D1     $xr17
+#define D2     $xr18
+#define D3     $xr19
+#define D4     $xr20
+#define D5     $xr21
+#define D6     $xr22
+#define D7     $xr23
+#define D8     $xr24
+#define D9     $xr25
+#define D10    $xr26
+#define D11    $xr27
+#define D12    $xr28
+#define D13    $xr29
+#define D14    $xr30
+#define D15    $xr31
+#define VALPHA $xr15
 
 /* Prefetch interval */
-#define A_PRE  0x200
+#define A_PRE  0x400
 #define B_PRE  0x100
+
+.macro KERNEL2x16x4
+    xvld     U0,   A0,    0x00
+    xvfmadd.d  D0,  U8, U12, D0
+    xvfmadd.d  D1,  U9, U12, D1
+
+    xvld     U1,   A0,    0x20
+    xvfmadd.d  D2,  U10, U12, D2
+    xvfmadd.d  D3,  U11, U12, D3
+
+    xvld     U2,   A0,    0x40
+    xvfmadd.d  D4,  U8, U13, D4
+    xvfmadd.d  D5,  U9, U13, D5
+
+    xvld     U3,   A0,    0x60
+    xvfmadd.d  D6,  U10, U13, D6
+    xvfmadd.d  D7,  U11, U13, D7
+
+    xvldrepl.d U4,  B0, 0x00
+    xvfmadd.d  D8,  U8, U14, D8
+    xvfmadd.d  D9,  U9, U14, D9
+
+    preld      0,   B0, B_PRE
+    xvldrepl.d U5,  B0, 0x08
+    xvfmadd.d  D10, U10, U14, D10
+    xvfmadd.d  D11, U11, U14, D11
+
+    preld      0,   A0, A_PRE
+    xvldrepl.d U6,  B0, 0x10
+    xvfmadd.d  D12, U8, U15, D12
+    xvfmadd.d  D13, U9, U15, D13
+
+    preld      0,   A0, A_PRE + 0x40
+    xvldrepl.d U7,  B0, 0x18
+    xvfmadd.d  D14, U10, U15, D14
+    xvfmadd.d  D15, U11, U15, D15
+
+    addi.d     A0,  A0, 0x80
+    addi.d     B0,  B0, 0x20
+
+    xvld     U8,   A0,    0x00
+    xvfmadd.d  D0,  U0, U4, D0
+    xvfmadd.d  D1,  U1, U4, D1
+
+    xvld     U9,   A0,    0x20
+    xvfmadd.d  D2,  U2, U4, D2
+    xvfmadd.d  D3,  U3, U4, D3
+
+    xvld     U10,   A0,    0x40
+    xvfmadd.d  D4,  U0, U5, D4
+    xvfmadd.d  D5,  U1, U5, D5
+
+    xvld     U11,   A0,    0x60
+    xvfmadd.d  D6,  U2, U5, D6
+    xvfmadd.d  D7,  U3, U5, D7
+
+    xvldrepl.d U12,  B0, 0x00
+    xvfmadd.d  D8,  U0, U6, D8
+    xvfmadd.d  D9,  U1, U6, D9
+
+    preld      0,   B0, B_PRE
+    xvldrepl.d U13,  B0, 0x08
+    xvfmadd.d  D10, U2, U6, D10
+    xvfmadd.d  D11, U3, U6, D11
+
+    preld      0,   A0, A_PRE
+    xvldrepl.d U14,  B0, 0x10
+    xvfmadd.d  D12, U0, U7, D12
+    xvfmadd.d  D13, U1, U7, D13
+
+    preld      0,   A0, A_PRE + 0x40
+    xvldrepl.d U15,  B0, 0x18
+    xvfmadd.d  D14, U2, U7, D14
+    xvfmadd.d  D15, U3, U7, D15
+
+    addi.d     A0,  A0, 0x80
+    addi.d     B0,  B0, 0x20
+.endm
+
+.macro KERNEL2x16x4_END
+    xvld     U0,   A0,    0x00
+    xvfmadd.d  D0,  U8, U12, D0
+    xvfmadd.d  D1,  U9, U12, D1
+
+    xvld     U1,   A0,    0x20
+    xvfmadd.d  D2,  U10, U12, D2
+    xvfmadd.d  D3,  U11, U12, D3
+
+    xvld     U2,   A0,    0x40
+    xvfmadd.d  D4,  U8, U13, D4
+    xvfmadd.d  D5,  U9, U13, D5
+
+    xvld     U3,   A0,    0x60
+    xvfmadd.d  D6,  U10, U13, D6
+    xvfmadd.d  D7,  U11, U13, D7
+
+    xvldrepl.d U4,  B0, 0x00
+    xvfmadd.d  D8,  U8, U14, D8
+    xvfmadd.d  D9,  U9, U14, D9
+
+    preld      0,   B0, B_PRE
+    xvldrepl.d U5,  B0, 0x08
+    xvfmadd.d  D10, U10, U14, D10
+    xvfmadd.d  D11, U11, U14, D11
+
+    preld      0,   A0, A_PRE
+    xvldrepl.d U6,  B0, 0x10
+    xvfmadd.d  D12, U8, U15, D12
+    xvfmadd.d  D13, U9, U15, D13
+
+    preld      0,   A0, A_PRE + 0x40
+    xvldrepl.d U7,  B0, 0x18
+    xvfmadd.d  D14, U10, U15, D14
+    xvfmadd.d  D15, U11, U15, D15
+
+    addi.d     A0,  A0, 0x80
+    addi.d     B0,  B0, 0x20
+
+    xvfmadd.d  D0,  U0, U4, D0
+    xvfmadd.d  D1,  U1, U4, D1
+
+    xvfmadd.d  D2,  U2, U4, D2
+    xvfmadd.d  D3,  U3, U4, D3
+
+    xvfmadd.d  D4,  U0, U5, D4
+    xvfmadd.d  D5,  U1, U5, D5
+
+    xvfmadd.d  D6,  U2, U5, D6
+    xvfmadd.d  D7,  U3, U5, D7
+
+    xvfmadd.d  D8,  U0, U6, D8
+    xvfmadd.d  D9,  U1, U6, D9
+
+    preld      0,   B0, B_PRE
+    xvfmadd.d  D10, U2, U6, D10
+    xvfmadd.d  D11, U3, U6, D11
+
+    preld      0,   A0, A_PRE
+    xvfmadd.d  D12, U0, U7, D12
+    xvfmadd.d  D13, U1, U7, D13
+
+    preld      0,   A0, A_PRE + 0x40
+    xvfmadd.d  D14, U2, U7, D14
+    xvfmadd.d  D15, U3, U7, D15
+.endm
+
+.macro KERNEL8x16x4
+    KERNEL2x16x4
+    KERNEL2x16x4
+    KERNEL2x16x4
+    KERNEL2x16x4
+.endm
+
+.macro KERNEL8x16x4_END
+    KERNEL2x16x4
+    KERNEL2x16x4
+    KERNEL2x16x4
+    KERNEL2x16x4_END
+.endm
 
     PROLOGUE
 
-    addi.d   $sp,   $sp,   -56
+    addi.d   $sp,   $sp,   -120
     /* Store regs */
     SDARG    $r23,  $sp,   0
     SDARG    $r24,  $sp,   8
@@ -100,11 +292,15 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     SDARG    $r26,  $sp,   24
     SDARG    $r27,  $sp,   32
     ST       $f23,  $sp,   40
-    ST       ALPHA, $sp,   48
-
-    /* VALPHA = {ALPHA, ALPHA, ALPHA, ALPHA} */
-    xvld         VALPHA, $sp,  48
-    xvreplve0.d  VALPHA, VALPHA
+    ST       $f24,  $sp,   48
+    ST       $f25,  $sp,   56
+    ST       $f26,  $sp,   64
+    ST       $f27,  $sp,   72
+    ST       $f28,  $sp,   80
+    ST       $f29,  $sp,   88
+    ST       $f30,  $sp,   96
+    ST       $f31,  $sp,   104
+    ST       ALPHA, $sp,   112
 
 #if defined (TRMMKERNEL) && !defined(LEFT)
     sub.d   OFF,   ZERO,  OFFSET
@@ -183,32 +379,32 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     xvfmul.d  D2,  U2, U4
     xvfmul.d  D3,  U3, U4
 
-    xvldrepl.d     U4, B0, 0x08
+    xvldrepl.d     U5, B0, 0x08
     preld          0,   C1,    0x00
     /* line 2 */
-    xvfmul.d  D4,  U0, U4
-    xvfmul.d  D5,  U1, U4
+    xvfmul.d  D4,  U0, U5
+    xvfmul.d  D5,  U1, U5
     preld     0,   C1,    0x40
-    xvfmul.d  D6,  U2, U4
-    xvfmul.d  D7,  U3, U4
+    xvfmul.d  D6,  U2, U5
+    xvfmul.d  D7,  U3, U5
 
-    xvldrepl.d     U4, B0, 0x10
+    xvldrepl.d     U6, B0, 0x10
     preld          0,   C2,    0x00
     /* line 3 */
-    xvfmul.d  D8,  U0, U4
-    xvfmul.d  D9,  U1, U4
+    xvfmul.d  D8,  U0, U6
+    xvfmul.d  D9,  U1, U6
     preld     0,   C2,    0x40
-    xvfmul.d  D10, U2, U4
-    xvfmul.d  D11, U3, U4
+    xvfmul.d  D10, U2, U6
+    xvfmul.d  D11, U3, U6
 
-    xvldrepl.d     U4, B0, 0x18
+    xvldrepl.d     U7, B0, 0x18
     preld          0,   C3,    0x00
     /* line 4 */
-    xvfmul.d  D12, U0, U4
-    xvfmul.d  D13, U1, U4
+    xvfmul.d  D12, U0, U7
+    xvfmul.d  D13, U1, U7
     preld     0,   C3,    0x40
-    xvfmul.d  D14, U2, U4
-    xvfmul.d  D15, U3, U4
+    xvfmul.d  D14, U2, U7
+    xvfmul.d  D15, U3, U7
 
     /* Add stride for A0 and B0 */
     addi.d    A0,  A0, 0x80
@@ -218,315 +414,29 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     srai.d    TL,  L,  3  /* TL = (L-1) >> 3 */
     /* if (TL < 1) goto L_L7 */
     beq       ZERO,TL, .L_L7
+    
+    xvld     U8,   A0,    0x00
+    xvld     U9,   A0,    0x20
+    xvld     U10,  A0,    0x40
+    xvld     U11,  A0,    0x60
 
-    /* Calculate 8 sets of D0~D15 */
+    addi.d    TL,  TL,  -1
+
+    xvldrepl.d  U12,   B0,  0x00
+    xvldrepl.d  U13,   B0,  0x08
+    xvldrepl.d  U14,   B0,  0x10
+    xvldrepl.d  U15,   B0,  0x18
+    addi.d     A0,  A0, 0x80
+    addi.d     B0,  B0, 0x20
+
+    beq    ZERO,    TL,  .L_TL1_END
 .L_TL1: /* TL-- */
-           /***8-1***/
-    /* Load 16 * 64 from A0 */
-    xvld     U0,   A0,    0x00
-    xvld     U1,   A0,    0x20
-    xvld     U2,   A0,    0x40
-    xvld     U3,   A0,    0x60
-
-    /* Cumulative D0~D15 */
-    xvldrepl.d U4,  B0, 0x00
-    xvfmadd.d  D0,  U0, U4, D0
-    xvfmadd.d  D1,  U1, U4, D1
-    xvfmadd.d  D2,  U2, U4, D2
-    xvfmadd.d  D3,  U3, U4, D3
-    preld      0,   B0, B_PRE
-
-    xvldrepl.d U4,  B0, 0x08
-    xvfmadd.d  D4,  U0, U4, D4
-    xvfmadd.d  D5,  U1, U4, D5
-    xvfmadd.d  D6,  U2, U4, D6
-    xvfmadd.d  D7,  U3, U4, D7
-    preld      0,   A0, A_PRE
-
-    xvldrepl.d U4,  B0, 0x10
-    xvfmadd.d  D8,  U0, U4, D8
-    xvfmadd.d  D9,  U1, U4, D9
-    xvfmadd.d  D10, U2, U4, D10
-    xvfmadd.d  D11, U3, U4, D11
-    preld      0,   A0, A_PRE + 0x40
-
-    xvldrepl.d U4,  B0, 0x18
-    xvfmadd.d  D12, U0, U4, D12
-    xvfmadd.d  D13, U1, U4, D13
-    xvfmadd.d  D14, U2, U4, D14
-    xvfmadd.d  D15, U3, U4, D15
-
-    addi.d     A0,  A0, 0x80
-    addi.d     B0,  B0, 0x20
-
-           /***8-2***/
-    /* Load 16 * 64 from A0 */
-    xvld     U0,   A0,    0x00
-    xvld     U1,   A0,    0x20
-    xvld     U2,   A0,    0x40
-    xvld     U3,   A0,    0x60
-
-    /* Cumulative D0~D15 */
-    xvldrepl.d U4,  B0, 0x00
-    xvfmadd.d  D0,  U0, U4, D0
-    xvfmadd.d  D1,  U1, U4, D1
-    xvfmadd.d  D2,  U2, U4, D2
-    xvfmadd.d  D3,  U3, U4, D3
-    preld      0,   B0, B_PRE
-
-    xvldrepl.d U4,  B0, 0x08
-    xvfmadd.d  D4,  U0, U4, D4
-    xvfmadd.d  D5,  U1, U4, D5
-    xvfmadd.d  D6,  U2, U4, D6
-    xvfmadd.d  D7,  U3, U4, D7
-    preld      0,   A0, A_PRE
-
-    xvldrepl.d U4,  B0, 0x10
-    xvfmadd.d  D8,  U0, U4, D8
-    xvfmadd.d  D9,  U1, U4, D9
-    xvfmadd.d  D10, U2, U4, D10
-    xvfmadd.d  D11, U3, U4, D11
-    preld      0,   A0, A_PRE + 0x40
-
-    xvldrepl.d U4,  B0, 0x18
-    xvfmadd.d  D12, U0, U4, D12
-    xvfmadd.d  D13, U1, U4, D13
-    xvfmadd.d  D14, U2, U4, D14
-    xvfmadd.d  D15, U3, U4, D15
-
-    addi.d     A0,  A0, 0x80
-    addi.d     B0,  B0, 0x20
-
-           /***8-3***/
-    /* Load 16 * 64 from A0 */
-    xvld     U0,   A0,    0x00
-    xvld     U1,   A0,    0x20
-    xvld     U2,   A0,    0x40
-    xvld     U3,   A0,    0x60
-
-    /* Cumulative D0~D15 */
-    xvldrepl.d U4,  B0, 0x00
-    xvfmadd.d  D0,  U0, U4, D0
-    xvfmadd.d  D1,  U1, U4, D1
-    xvfmadd.d  D2,  U2, U4, D2
-    xvfmadd.d  D3,  U3, U4, D3
-    preld      0,   B0, B_PRE
-
-    xvldrepl.d U4,  B0, 0x08
-    xvfmadd.d  D4,  U0, U4, D4
-    xvfmadd.d  D5,  U1, U4, D5
-    xvfmadd.d  D6,  U2, U4, D6
-    xvfmadd.d  D7,  U3, U4, D7
-    preld      0,   A0, A_PRE
-
-    xvldrepl.d U4,  B0, 0x10
-    xvfmadd.d  D8,  U0, U4, D8
-    xvfmadd.d  D9,  U1, U4, D9
-    xvfmadd.d  D10, U2, U4, D10
-    xvfmadd.d  D11, U3, U4, D11
-    preld      0,   A0, A_PRE + 0x40
-
-    xvldrepl.d U4,  B0, 0x18
-    xvfmadd.d  D12, U0, U4, D12
-    xvfmadd.d  D13, U1, U4, D13
-    xvfmadd.d  D14, U2, U4, D14
-    xvfmadd.d  D15, U3, U4, D15
-
-    addi.d     A0,  A0, 0x80
-    addi.d     B0,  B0, 0x20
-
-           /***8-4***/
-    /* Load 16 * 64 from A0 */
-    xvld     U0,   A0,    0x00
-    xvld     U1,   A0,    0x20
-    xvld     U2,   A0,    0x40
-    xvld     U3,   A0,    0x60
-
-    /* Cumulative D0~D15 */
-    xvldrepl.d U4,  B0, 0x00
-    xvfmadd.d  D0,  U0, U4, D0
-    xvfmadd.d  D1,  U1, U4, D1
-    xvfmadd.d  D2,  U2, U4, D2
-    xvfmadd.d  D3,  U3, U4, D3
-    preld      0,   B0, B_PRE
-
-    xvldrepl.d U4,  B0, 0x08
-    xvfmadd.d  D4,  U0, U4, D4
-    xvfmadd.d  D5,  U1, U4, D5
-    xvfmadd.d  D6,  U2, U4, D6
-    xvfmadd.d  D7,  U3, U4, D7
-    preld      0,   A0, A_PRE
-
-    xvldrepl.d U4,  B0, 0x10
-    xvfmadd.d  D8,  U0, U4, D8
-    xvfmadd.d  D9,  U1, U4, D9
-    xvfmadd.d  D10, U2, U4, D10
-    xvfmadd.d  D11, U3, U4, D11
-    preld      0,   A0, A_PRE + 0x40
-
-    xvldrepl.d U4,  B0, 0x18
-    xvfmadd.d  D12, U0, U4, D12
-    xvfmadd.d  D13, U1, U4, D13
-    xvfmadd.d  D14, U2, U4, D14
-    xvfmadd.d  D15, U3, U4, D15
-
-    addi.d     A0,  A0, 0x80
-    addi.d     B0,  B0, 0x20
-
-           /***8-5***/
-    /* Load 16 * 64 from A0 */
-    xvld     U0,   A0,    0x00
-    xvld     U1,   A0,    0x20
-    xvld     U2,   A0,    0x40
-    xvld     U3,   A0,    0x60
-
-    /* Cumulative D0~D15 */
-    xvldrepl.d U4,  B0, 0x00
-    xvfmadd.d  D0,  U0, U4, D0
-    xvfmadd.d  D1,  U1, U4, D1
-    xvfmadd.d  D2,  U2, U4, D2
-    xvfmadd.d  D3,  U3, U4, D3
-    preld      0,   B0, B_PRE
-
-    xvldrepl.d U4,  B0, 0x08
-    xvfmadd.d  D4,  U0, U4, D4
-    xvfmadd.d  D5,  U1, U4, D5
-    xvfmadd.d  D6,  U2, U4, D6
-    xvfmadd.d  D7,  U3, U4, D7
-    preld      0,   A0, A_PRE
-
-    xvldrepl.d U4,  B0, 0x10
-    xvfmadd.d  D8,  U0, U4, D8
-    xvfmadd.d  D9,  U1, U4, D9
-    xvfmadd.d  D10, U2, U4, D10
-    xvfmadd.d  D11, U3, U4, D11
-    preld      0,   A0, A_PRE + 0x40
-
-    xvldrepl.d U4,  B0, 0x18
-    xvfmadd.d  D12, U0, U4, D12
-    xvfmadd.d  D13, U1, U4, D13
-    xvfmadd.d  D14, U2, U4, D14
-    xvfmadd.d  D15, U3, U4, D15
-
-    addi.d     A0,  A0, 0x80
-    addi.d     B0,  B0, 0x20
-
-           /***8-6***/
-    /* Load 16 * 64 from A0 */
-    xvld     U0,   A0,    0x00
-    xvld     U1,   A0,    0x20
-    xvld     U2,   A0,    0x40
-    xvld     U3,   A0,    0x60
-
-    /* Cumulative D0~D15 */
-    xvldrepl.d U4,  B0, 0x00
-    xvfmadd.d  D0,  U0, U4, D0
-    xvfmadd.d  D1,  U1, U4, D1
-    xvfmadd.d  D2,  U2, U4, D2
-    xvfmadd.d  D3,  U3, U4, D3
-    preld      0,   B0, B_PRE
-
-    xvldrepl.d U4,  B0, 0x08
-    xvfmadd.d  D4,  U0, U4, D4
-    xvfmadd.d  D5,  U1, U4, D5
-    xvfmadd.d  D6,  U2, U4, D6
-    xvfmadd.d  D7,  U3, U4, D7
-    preld      0,   A0, A_PRE
-
-    xvldrepl.d U4,  B0, 0x10
-    xvfmadd.d  D8,  U0, U4, D8
-    xvfmadd.d  D9,  U1, U4, D9
-    xvfmadd.d  D10, U2, U4, D10
-    xvfmadd.d  D11, U3, U4, D11
-    preld      0,   A0, A_PRE + 0x40
-
-    xvldrepl.d U4,  B0, 0x18
-    xvfmadd.d  D12, U0, U4, D12
-    xvfmadd.d  D13, U1, U4, D13
-    xvfmadd.d  D14, U2, U4, D14
-    xvfmadd.d  D15, U3, U4, D15
-
-    addi.d     A0,  A0, 0x80
-    addi.d     B0,  B0, 0x20
-
-           /***8-7***/
-    /* Load 16 * 64 from A0 */
-    xvld     U0,   A0,    0x00
-    xvld     U1,   A0,    0x20
-    xvld     U2,   A0,    0x40
-    xvld     U3,   A0,    0x60
-
-    /* Cumulative D0~D15 */
-    xvldrepl.d U4,  B0, 0x00
-    xvfmadd.d  D0,  U0, U4, D0
-    xvfmadd.d  D1,  U1, U4, D1
-    xvfmadd.d  D2,  U2, U4, D2
-    xvfmadd.d  D3,  U3, U4, D3
-    preld      0,   B0, B_PRE
-
-    xvldrepl.d U4,  B0, 0x08
-    xvfmadd.d  D4,  U0, U4, D4
-    xvfmadd.d  D5,  U1, U4, D5
-    xvfmadd.d  D6,  U2, U4, D6
-    xvfmadd.d  D7,  U3, U4, D7
-    preld      0,   A0, A_PRE
-
-    xvldrepl.d U4,  B0, 0x10
-    xvfmadd.d  D8,  U0, U4, D8
-    xvfmadd.d  D9,  U1, U4, D9
-    xvfmadd.d  D10, U2, U4, D10
-    xvfmadd.d  D11, U3, U4, D11
-    preld      0,   A0, A_PRE + 0x40
-
-    xvldrepl.d U4,  B0, 0x18
-    xvfmadd.d  D12, U0, U4, D12
-    xvfmadd.d  D13, U1, U4, D13
-    xvfmadd.d  D14, U2, U4, D14
-    xvfmadd.d  D15, U3, U4, D15
-
-    addi.d     A0,  A0, 0x80
-    addi.d     B0,  B0, 0x20
-
-           /***8-8***/
-    /* Load 16 * 64 from A0 */
-    xvld     U0,   A0,    0x00
-    xvld     U1,   A0,    0x20
-    xvld     U2,   A0,    0x40
-    xvld     U3,   A0,    0x60
-
-    /* Cumulative D0~D15 */
-    xvldrepl.d U4,  B0, 0x00
-    xvfmadd.d  D0,  U0, U4, D0
-    xvfmadd.d  D1,  U1, U4, D1
-    xvfmadd.d  D2,  U2, U4, D2
-    xvfmadd.d  D3,  U3, U4, D3
-    preld      0,   B0, B_PRE
-
-    xvldrepl.d U4,  B0, 0x08
-    xvfmadd.d  D4,  U0, U4, D4
-    xvfmadd.d  D5,  U1, U4, D5
-    xvfmadd.d  D6,  U2, U4, D6
-    xvfmadd.d  D7,  U3, U4, D7
-    preld      0,   A0, A_PRE
-
-    xvldrepl.d U4,  B0, 0x10
-    xvfmadd.d  D8,  U0, U4, D8
-    xvfmadd.d  D9,  U1, U4, D9
-    xvfmadd.d  D10, U2, U4, D10
-    xvfmadd.d  D11, U3, U4, D11
-    preld      0,   A0, A_PRE + 0x40
-
-    xvldrepl.d U4,  B0, 0x18
-    xvfmadd.d  D12, U0, U4, D12
-    xvfmadd.d  D13, U1, U4, D13
-    xvfmadd.d  D14, U2, U4, D14
-    xvfmadd.d  D15, U3, U4, D15
-
-    addi.d     A0,  A0, 0x80
-    addi.d     B0,  B0, 0x20
-
+    KERNEL8x16x4
     addi.d    TL,  TL, -1 /* TL-- */
     blt       ZERO,TL, .L_TL1
+
+.L_TL1_END:
+    KERNEL8x16x4_END
 
    /* Maybe we need calculate the last
     * 7 sets of D0~D15?
@@ -550,23 +460,23 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     xvfmadd.d  D2,  U2, U4, D2
     xvfmadd.d  D3,  U3, U4, D3
 
-    xvldrepl.d U4,  B0, 0x08
-    xvfmadd.d  D4,  U0, U4, D4
-    xvfmadd.d  D5,  U1, U4, D5
-    xvfmadd.d  D6,  U2, U4, D6
-    xvfmadd.d  D7,  U3, U4, D7
+    xvldrepl.d U5,  B0, 0x08
+    xvfmadd.d  D4,  U0, U5, D4
+    xvfmadd.d  D5,  U1, U5, D5
+    xvfmadd.d  D6,  U2, U5, D6
+    xvfmadd.d  D7,  U3, U5, D7
 
-    xvldrepl.d U4,  B0, 0x10
-    xvfmadd.d  D8,  U0, U4, D8
-    xvfmadd.d  D9,  U1, U4, D9
-    xvfmadd.d  D10, U2, U4, D10
-    xvfmadd.d  D11, U3, U4, D11
+    xvldrepl.d U6,  B0, 0x10
+    xvfmadd.d  D8,  U0, U6, D8
+    xvfmadd.d  D9,  U1, U6, D9
+    xvfmadd.d  D10, U2, U6, D10
+    xvfmadd.d  D11, U3, U6, D11
 
-    xvldrepl.d U4,  B0, 0x18
-    xvfmadd.d  D12, U0, U4, D12
-    xvfmadd.d  D13, U1, U4, D13
-    xvfmadd.d  D14, U2, U4, D14
-    xvfmadd.d  D15, U3, U4, D15
+    xvldrepl.d U7,  B0, 0x18
+    xvfmadd.d  D12, U0, U7, D12
+    xvfmadd.d  D13, U1, U7, D13
+    xvfmadd.d  D14, U2, U7, D14
+    xvfmadd.d  D15, U3, U7, D15
 
     /* Add stride for A0, B0 */
     addi.d     A0,  A0, 0x80
@@ -576,6 +486,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     blt        ZERO,TL, .L_L71
 
 .L_L0:
+    xvldrepl.d  VALPHA, $sp, 112
 #if defined(TRMMKERNEL)
     xvfmul.d  D0,   D0,  VALPHA
     xvfmul.d  D1,   D1,  VALPHA
@@ -973,6 +884,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     blt        ZERO,TL, .L_M8_L71
 
 .L_M8_L0:
+    xvldrepl.d  VALPHA, $sp, 112
 #if defined(TRMMKERNEL)
     xvfmul.d  D0,   D0,  VALPHA
     xvfmul.d  D1,   D1,  VALPHA
@@ -1282,6 +1194,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     blt        ZERO,TL, .L_M4_L71
 
 .L_M4_L0:
+    xvldrepl.d  VALPHA, $sp, 112
 #if defined(TRMMKERNEL)
     xvfmul.d  D0,   D0,  VALPHA
     xvfmul.d  D4,   D4,  VALPHA
@@ -1576,6 +1489,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     blt        ZERO,TL, .L_M2_L71
 
 .L_M2_L0:
+    xvldrepl.d  VALPHA, $sp, 112
 #if defined(TRMMKERNEL)
     xvfmul.d  D0,   D0,  VALPHA
     xvfmul.d  D4,   D4,  VALPHA
@@ -1871,6 +1785,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     blt        ZERO,TL, .L_M1_L71
 
 .L_M1_L0:
+    xvldrepl.d  VALPHA, $sp, 112
 #if defined(TRMMKERNEL)
     xvfmul.d  D0,   D0,  VALPHA
     xvfmul.d  D4,   D4,  VALPHA
@@ -2243,6 +2158,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     blt        ZERO,TL, .L_N3_L71
 
 .L_N3_L0:
+    xvldrepl.d  VALPHA, $sp, 112
 #if defined(TRMMKERNEL)
     xvfmul.d  D0,   D0,  VALPHA
     xvfmul.d  D1,   D1,  VALPHA
@@ -2517,6 +2433,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     blt        ZERO,TL, .L_N3_M8_L71
 
 .L_N3_M8_L0:
+    xvldrepl.d  VALPHA, $sp, 112
 #if defined(TRMMKERNEL)
     xvfmul.d  D0,   D0,  VALPHA
     xvfmul.d  D1,   D1,  VALPHA
@@ -2740,6 +2657,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     blt        ZERO,TL, .L_N3_M4_L71
 
 .L_N3_M4_L0:
+    xvldrepl.d  VALPHA, $sp, 112
 #if defined(TRMMKERNEL)
     xvfmul.d  D0,   D0,  VALPHA
     xvfmul.d  D4,   D4,  VALPHA
@@ -2953,6 +2871,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     blt        ZERO,TL, .L_N3_M2_L71
 
 .L_N3_M2_L0:
+    xvldrepl.d  VALPHA, $sp, 112
 #if defined(TRMMKERNEL)
     xvfmul.d  D0,   D0,  VALPHA
     xvfmul.d  D4,   D4,  VALPHA
@@ -3166,6 +3085,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     blt        ZERO,TL, .L_N3_M1_L71
 
 .L_N3_M1_L0:
+    xvldrepl.d  VALPHA, $sp, 112
 #if defined(TRMMKERNEL)
     xvfmul.d  D0,   D0,  VALPHA
     xvfmul.d  D4,   D4,  VALPHA
@@ -3458,6 +3378,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     blt        ZERO,TL, .L_N1_L71
 
 .L_N1_L0:
+    xvldrepl.d  VALPHA, $sp, 112
 #if defined(TRMMKERNEL)
     xvfmul.d  D0,   D0,  VALPHA
     xvfmul.d  D1,   D1,  VALPHA
@@ -3670,6 +3591,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     blt        ZERO,TL, .L_N1_M8_L71
 
 .L_N1_M8_L0:
+    xvldrepl.d  VALPHA, $sp, 112
 #if defined(TRMMKERNEL)
     xvfmul.d  D0,   D0,  VALPHA
     xvfmul.d  D1,   D1,  VALPHA
@@ -3848,6 +3770,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     blt        ZERO,TL, .L_N1_M4_L71
 
 .L_N1_M4_L0:
+    xvldrepl.d  VALPHA, $sp, 112
 #if defined(TRMMKERNEL)
     xvfmul.d  D0,   D0,  VALPHA
 #else
@@ -4023,6 +3946,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     blt        ZERO,TL, .L_N1_M2_L71
 
 .L_N1_M2_L0:
+    xvldrepl.d  VALPHA, $sp, 112
 #if defined(TRMMKERNEL)
     xvfmul.d  D0,   D0,  VALPHA
 #else
@@ -4197,6 +4121,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     blt        ZERO,TL, .L_N1_M1_L71
 
 .L_N1_M1_L0:
+    xvldrepl.d  VALPHA, $sp, 112
 #if defined(TRMMKERNEL)
     xvfmul.d  D0,   D0,  VALPHA
 #else
@@ -4243,7 +4168,15 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     LDARG    $r26,  $sp,   24
     LDARG    $r27,  $sp,   32
     LD       $f23,  $sp,   40
-    addi.d   $sp,   $sp,   56
+    LD       $f24,  $sp,   48
+    LD       $f25,  $sp,   56
+    LD       $f26,  $sp,   64
+    LD       $f27,  $sp,   72
+    LD       $f28,  $sp,   80
+    LD       $f29,  $sp,   88
+    LD       $f30,  $sp,   96
+    LD       $f31,  $sp,   104
+    addi.d   $sp,   $sp,   120
 
     jirl    $r0, $r1, 0x0
 
