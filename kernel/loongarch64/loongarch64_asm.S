@@ -218,6 +218,15 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .endif
 .endm
 //
+// GSUB
+//
+.macro GSUB pre_op, suf_op:req, out:req, in0:req, in1:req, more:vararg
+    \pre_op\()sub.\suf_op \out, \in0, \in1
+.ifnb \more
+    GSUB \pre_op, \suf_op, \more
+.endif
+.endm
+//
 // GSLLI
 //
 .macro GSLLI pre_op, suf_op:req, out:req, in0:req, in1:req, more:vararg
@@ -242,6 +251,24 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     \pre_op\()xor.\suf_op    \out,   \in0,   \in1
 .ifnb \more
     GXOR \pre_op, \suf_op, \more
+.endif
+.endm
+//
+// GPERMI
+//
+.macro GPERMI pre_op:req, suf_op:req, out:req, in0:req, in1:req, more:vararg
+    \pre_op\()permi.\suf_op     \out,   \in0,   \in1
+.ifnb \more
+    GPERMI \pre_op, \suf_op, \more
+.endif
+.endm
+//
+// GNMSUB
+//
+.macro GNMSUB pre_op:req, suf_op:req, out:req, in0:req, in1:req, in2:req, more:vararg
+    \pre_op\()nmsub.\suf_op     \out,   \in0,   \in1,   \in2
+.ifnb \more
+    GNMSUB \pre_op, \suf_op, \more
 .endif
 .endm
 
@@ -310,4 +337,37 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 .ifnb \more
     GACC \pre_op, \suf_op, \more
 .endif
+.endm
+//
+// GMOV
+//
+.macro GMOV pre_op:req, out:req, in:req, more:vararg
+    \pre_op\()or.v  \out, \in, \in
+.ifnb \more
+    GMOV \pre_op, \more
+.endif
+.endm
+
+//
+// Media Related Macros
+//
+.macro GSBUTTERFLY pre_op, suf_op, out0, out1, in0, in1
+    \pre_op\()ilvl.\suf_op \out0, \in0, \in1
+    \pre_op\()ilvh.\suf_op \out1, \in0, \in1
+.endm
+.macro GINTERLACE pre_op, suf_op, out0, out1, in0, in1
+    \pre_op\()pickev.\suf_op \out0, \in0, \in1
+    \pre_op\()pickod.\suf_op \out1, \in0, \in1
+.endm
+
+//
+// TRANSPOSE4x4_D: Transpose 4x4 block with double-word elements in vectors,
+// has no pre_op param. 128-bit vector instructions are not supported.
+//
+.macro GTRANSPOSE4x4_D in0, in1, in2, in3, out0, out1, out2, out3, \
+                       vt0, vt1
+    GSBUTTERFLY xv, d, \vt0, \out1, \in1, \in0
+    GSBUTTERFLY xv, d, \vt1, \out3, \in3, \in2
+    GMOV xv, \out0, \vt0, \out2, \vt1, \vt1, \out3
+    GPERMI xv, q, \out0, \out2, 0x02, \out2, \vt0, 0x31, \out3, \out1, 0x31, \out1, \vt1, 0x02
 .endm
