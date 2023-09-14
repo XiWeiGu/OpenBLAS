@@ -746,3 +746,39 @@ void blas_set_parameter(void)
 }
 
 #endif
+
+#if defined(ARCH_LOONGARCH64)
+// Return B
+static int get_L3_size() {
+  /*
+   * CPUCPG Configuration Information Number 0x14
+   * 30            24 23        16 15     0
+   * --------------------------------------
+   * | Linesize-log2 | Index-log2 | Way-1 |
+   * --------------------------------------
+   */
+  int ret = 0, linesize = 0, index = 0, way = 0;
+  __asm__ volatile (
+    "cpucfg %0, %1 \n\t"
+    : "+&r"(ret)
+    : "r"(0x14)
+  );
+  way = (ret & 0xffff) + 1;
+  index = (ret >> 0x10) & 0xff;
+  linesize = (ret >> 0x18) & 0x2f;
+  return (powf(2, (float)linesize) * powf(2, (float)index) * way);
+}
+void blas_set_parameter(void) {
+#if defined(LOONGSON3R5)
+    // Step 1: Calculate the average L3 cache size available to each thread
+    int per_l3 = get_L3_size() / blas_num_threads;
+    // Step 2: The performance is best when testing DGEMM_Q * DGEMM_R
+    // occupying one-fourth of the per_l3.
+    dgemm_r = (per_l3 >> 2) / DGEMM_Q / 8;
+    dgemm_r = dgemm_r & (~3);
+    sgemm_r = (per_l3 >> 2) / SGEMM_Q / 4;
+    sgemm_r = sgemm_r & (~3);
+    printf("%d, %d\n", dgemm_r, sgemm_r);
+#endif
+}
+#endif

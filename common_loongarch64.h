@@ -197,7 +197,9 @@ REALNAME: ;\
 
 #define SEEK_ADDRESS
 
-#define BUFFER_SIZE     ( 32 << 20)
+// Allocate a 32MB + 64KB buffer, with the tail used to
+// reduce cache friction
+#define BUFFER_SIZE     ((32 << 20) + (64 << 10))
 
 #define PAGESIZE        (16UL << 10)
 #define FIXED_PAGESIZE  (16UL << 10)
