@@ -2642,6 +2642,12 @@ typedef struct {
   void *a, *b, *c, *d, *alpha, *beta;
   BLASLONG	m, n, k, lda, ldb, ldc, ldd;
 
+  //gxw add
+  BLASLONG copy_a;
+  BLASLONG copy_b;
+  BLASLONG kernel;
+  pthread_mutex_t mtx;
+
 #ifdef SMP
   void *common;
   BLASLONG nthreads;

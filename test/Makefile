@@ -7,7 +7,7 @@ endif
 ifeq ($(NOFORTRAN),1)
 all ::
 else
-all :: level1 level2 level3
+all ::
 endif
 
 ifeq ($(BUILD_SINGLE),1)

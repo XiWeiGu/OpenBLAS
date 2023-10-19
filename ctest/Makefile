@@ -43,7 +43,7 @@ ztestl3o = c_zblas3.o c_z3chke.o auxiliary.o c_xerbla.o constant.o
 ztestl3o_3m = c_zblas3_3m.o c_z3chke_3m.o auxiliary.o c_xerbla.o constant.o
 
 
-all :: all1 all2 all3
+all ::
 
 ifeq ($(BUILD_SINGLE),1)
 all1targets += xscblat1

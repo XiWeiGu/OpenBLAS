@@ -161,6 +161,8 @@
 #define K	args -> k
 #endif
 
+#define TIMING
+
 #ifdef TIMING
 #define START_RPCC()		rpcc_counter = rpcc()
 #define STOP_RPCC(COUNTER)	COUNTER  += rpcc() - rpcc_counter
@@ -411,11 +413,19 @@ int CNAME(blas_arg_t *args, BLASLONG *range_m, BLASLONG *range_n,
 #ifdef TIMING
   total = (double)outercost + (double)innercost + (double)kernelcost;
 
-  printf( "Copy A : %5.2f Copy  B: %5.2f  Kernel : %5.2f  kernel Effi. : %5.2f Total Effi. : %5.2f\n",
-	   innercost / total * 100., outercost / total * 100.,
-	  kernelcost / total * 100.,
-	  (double)(m_to - m_from) * (double)(n_to - n_from) * (double)k / (double)kernelcost * 100. * (double)COMPSIZE / 2.,
-	  (double)(m_to - m_from) * (double)(n_to - n_from) * (double)k / total * 100. * (double)COMPSIZE / 2.);
+#if 0
+  printf( "Copy A times: %d ms, Copy B times: %d ms, Kernel times: %d ms, Copy A : %5.2f Copy  B: %5.2f  Kernel : %5.2f  kernel Effi. : %5.2f Total Effi. : %5.2f\n",
+       innercost, outercost, kernelcost,
+       innercost / total * 100., outercost / total * 100.,
+      kernelcost / total * 100.,
+      (double)(m_to - m_from) * (double)(n_to - n_from) * (double)k / (double)kernelcost * 100. * (double)COMPSIZE / 2.,
+      (double)(m_to - m_from) * (double)(n_to - n_from) * (double)k / total * 100. * (double)COMPSIZE / 2.);
+#endif
+  pthread_mutex_lock(&args->mtx);
+  args->copy_a += innercost;
+  args->copy_b += outercost;
+  args->kernel += kernelcost;
+  pthread_mutex_unlock(&args->mtx);
 
 #endif
 

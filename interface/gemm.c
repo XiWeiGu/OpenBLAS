@@ -233,7 +233,6 @@ void NAME(char *TRANSA, char *TRANSB,
 
   args.alpha = (void *)alpha;
   args.beta  = (void *)beta;
-
   transA = *TRANSA;
   transB = *TRANSB;
 
@@ -471,6 +470,13 @@ void CNAME(enum CBLAS_ORDER order, enum CBLAS_TRANSPOSE TransA, enum CBLAS_TRANS
   }
 
 #endif
+  // gxw add
+  args.copy_a = 0;
+  args.copy_b = 0;
+  args.kernel = 0;
+  //args.mtx = PTHREAD_MUTEX_INITIALIZER;
+  pthread_mutex_init(&args.mtx, NULL);
+
 
 #if defined(__linux__) && defined(__x86_64__) && defined(BFLOAT16)
 #if defined(DYNAMIC_ARCH)
@@ -579,6 +585,9 @@ void CNAME(enum CBLAS_ORDER order, enum CBLAS_TRANSPOSE TransA, enum CBLAS_TRANS
 #ifdef SMP
   }
 #endif
+
+ // gxw add
+ printf("copy a average time: %ld, copy b average time: %ld, kernel average time: %ld\n", args.copy_a / args.nthreads, args.copy_b /args.nthreads, args.kernel / args.nthreads);
 
  blas_memory_free(buffer);
 
