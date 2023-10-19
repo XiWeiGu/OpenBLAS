@@ -2841,8 +2841,117 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define SNUMOPT         2
 #define DNUMOPT         2
 
-#define GEMM_DEFAULT_OFFSET_A 0x10000 /* 64kb */
-#define GEMM_DEFAULT_OFFSET_B 0x100000 /* 1024kb */
+#define DGEMM_DEFAULT_P 32
+#define DGEMM_DEFAULT_Q 152
+#define DGEMM_DEFAULT_R 256
+
+// 很紧凑的排序sa, sb
+//#define GEMM_DEFAULT_OFFSET_A 0x9800
+//#define GEMM_DEFAULT_OFFSET_B 0x4c000
+//请输入矩阵的规模 (m n k): 2000 2000 2000
+//copy a average time: 39232697, copy b average time: 6550707, kernel average time: 498186433
+//请输入矩阵的规模 (m n k): 32000 2000 2000
+//copy a average time: 35729742, copy b average time: 30126789, kernel average time: 789725713
+
+// sa紧凑的排列 每个sb之间间隔1MB
+//#define GEMM_DEFAULT_OFFSET_A 0x9800
+//#define GEMM_DEFAULT_OFFSET_B 0x100000
+//请输入矩阵的规模 (m n k): 2000 2000 2000
+//copy a average time: 40163230, copy b average time: 7031891, kernel average time: 499550006
+//请输入矩阵的规模 (m n k): 32000 2000 2000
+//copy a average time: 33428557, copy b average time: 29670038, kernel average time: 782562352
+
+
+// sa紧凑的排列 每个sb之间间隔512kb
+//#define GEMM_DEFAULT_OFFSET_A 0x9800
+//#define GEMM_DEFAULT_OFFSET_B 0x80000
+//请输入矩阵的规模 (m n k): 2000 2000 2000
+//copy a average time: 38855752, copy b average time: 6897395, kernel average time: 500569331
+//请输入矩阵的规模 (m n k): 32000 2000 2000
+//copy a average time: 35241566, copy b average time: 32218109, kernel average time: 775993432
+
+// sa紧凑的排列 每个sb之间间隔0x81000
+//#define GEMM_DEFAULT_OFFSET_A 0x9800
+//#define GEMM_DEFAULT_OFFSET_B 0x81000
+//请输入矩阵的规模 (m n k): 2000 2000 2000
+//copy a average time: 39141697, copy b average time: 6826444, kernel average time: 498811237
+//请输入矩阵的规模 (m n k): 32000 2000 2000
+//copy a average time: 33229964, copy b average time: 31661546, kernel average time: 779048624
+
+// sa紧凑的排列 每个sb之间间隔0x90000
+//#define GEMM_DEFAULT_OFFSET_A 0x9800
+//#define GEMM_DEFAULT_OFFSET_B 0x90000
+//请输入矩阵的规模 (m n k): 2000 2000 2000
+//copy a average time: 38479335, copy b average time: 6700385, kernel average time: 497929242
+//请输入矩阵的规模 (m n k): 32000 2000 2000
+//copy a average time: 31463782, copy b average time: 31263261, kernel average time: 777952998
+
+// sa紧凑的排列 每个sb之间间隔0x91180
+//#define GEMM_DEFAULT_OFFSET_A 0x9800
+//#define GEMM_DEFAULT_OFFSET_B 0x91180
+//请输入矩阵的规模 (m n k): 2000 2000 2000
+//copy a average time: 39421173, copy b average time: 6854378, kernel average time: 498119981
+//请输入矩阵的规模 (m n k): 32000 2000 2000
+//copy a average time: 27744925, copy b average time: 32993015, kernel average time: 777005431
+
+// sa紧凑的排列 每个sb之间间隔0xa0000
+//#define GEMM_DEFAULT_OFFSET_A 0x9800
+//#define GEMM_DEFAULT_OFFSET_B 0xa0000
+//请输入矩阵的规模 (m n k): 2000 2000 2000
+//threads num: 1, copy a average time: 38902431, copy b average time: 6868963, kernel average time: 500270951
+//请输入矩阵的规模 (m n k): 32000 2000 2000
+//threads num: 16, copy a average time: 39666978, copy b average time: 31072968, kernel average time: 784647669
+
+
+// sa紧凑的排列 每个sb之间间隔0xaff00
+//#define GEMM_DEFAULT_OFFSET_A 0x9800
+//#define GEMM_DEFAULT_OFFSET_B 0xaff00
+//请输入矩阵的规模 (m n k): 2000 2000 2000
+//threads num: 1, copy a average time: 39389508, copy b average time: 6802014, kernel average time: 497814640
+//请输入矩阵的规模 (m n k): 32000 2000 2000
+//threads num: 16, copy a average time: 26414051, copy b average time: 33426185, kernel average time: 770153427
+
+// sa紧凑的排列 每个sb之间间隔0xb0000
+//#define GEMM_DEFAULT_OFFSET_A 0x9800
+//#define GEMM_DEFAULT_OFFSET_B 0xb0000
+//输入矩阵的规模 (m n k): 2000 2000 2000
+//threads num: 1, copy a average time: 39372378, copy b average time: 6471126, kernel average time: 494453369
+//请输入矩阵的规模 (m n k): 32000 2000 2000
+//threads num: 16, copy a average time: 34759757, copy b average time: 32043370, kernel average time: 781554364
+
+// sa紧凑的排列 每个sb之间间隔0xc0000
+//#define GEMM_DEFAULT_OFFSET_A 0x9800
+//#define GEMM_DEFAULT_OFFSET_B 0xc0000
+//请输入矩阵的规模 (m n k): 2000 2000 2000
+//threads num: 1, copy a average time: 38722776, copy b average time: 6695759, kernel average time: 498488731
+//请输入矩阵的规模 (m n k): 32000 2000 2000
+//threads num: 16, copy a average time: 38231344, copy b average time: 30808420, kernel average time: 783377835
+
+// sa紧凑的排列 每个sb之间间隔0xd0000
+//#define GEMM_DEFAULT_OFFSET_A 0x9800
+//#define GEMM_DEFAULT_OFFSET_B 0xd0000
+//请输入矩阵的规模 (m n k): 2000 2000 2000
+//threads num: 1, copy a average time: 39264417, copy b average time: 6642565, kernel average time: 495380600
+//请输入矩阵的规模 (m n k): 32000 2000 2000
+//threads num: 16, copy a average time: 39427172, copy b average time: 32017332, kernel average time: 787700343
+
+// sa紧凑的排列 每个sb之间间隔0xe0000
+//#define GEMM_DEFAULT_OFFSET_A 0x9800
+//#define GEMM_DEFAULT_OFFSET_B 0xe0000
+//请输入矩阵的规模 (m n k): 32000 2000 2000
+//threads num: 16, copy a average time: 23340843, copy b average time: 35074202, kernel average time: 780395355
+//请输入矩阵的规模 (m n k): 2000 2000 2000
+//threads num: 1, copy a average time: 39629371, copy b average time: 6650489, kernel average time: 494873035
+
+// sa紧凑的排列 每个sb之间间隔0xf0000
+#define GEMM_DEFAULT_OFFSET_A 0x9800
+#define GEMM_DEFAULT_OFFSET_B 0xf0000
+//请输入矩阵的规模 (m n k): 2000 2000 2000
+//threads num: 1, copy a average time: 39591001, copy b average time: 6946461, kernel average time: 497184742
+//请输入矩阵的规模 (m n k): 32000 2000 2000
+//threads num: 16, copy a average time: 26751031, copy b average time: 33734577, kernel average time: 772832467
+
+
 #define GEMM_DEFAULT_ALIGN 0x0ffffUL
 
 #if defined(NO_LASX)
@@ -2868,17 +2977,14 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define XGEMM_DEFAULT_UNROLL_M 1
 
 #define SGEMM_DEFAULT_P 256
-#define DGEMM_DEFAULT_P 32
 #define CGEMM_DEFAULT_P 128
 #define ZGEMM_DEFAULT_P 128
 
 #define SGEMM_DEFAULT_R 1024
-#define DGEMM_DEFAULT_R 256
 #define CGEMM_DEFAULT_R 4096
 #define ZGEMM_DEFAULT_R 4096
 
 #define SGEMM_DEFAULT_Q 256
-#define DGEMM_DEFAULT_Q 152
 #define CGEMM_DEFAULT_Q 128
 #define ZGEMM_DEFAULT_Q 128
 
