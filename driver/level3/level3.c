@@ -161,7 +161,7 @@
 #define K	args -> k
 #endif
 
-#define TIMING
+//#define TIMING
 
 #ifdef TIMING
 #define START_RPCC()		rpcc_counter = rpcc()

@@ -79,7 +79,7 @@
 #define GEMM_MULTITHREAD_THRESHOLD 4
 #endif
 
-#define TIMING
+//#define TIMING
 
 static int (*gemm[])(blas_arg_t *, BLASLONG *, BLASLONG *, IFLOAT *, IFLOAT *, BLASLONG) = {
 #ifndef GEMM3M
