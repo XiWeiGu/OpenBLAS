@@ -746,3 +746,70 @@ void blas_set_parameter(void)
 }
 
 #endif
+
+#if defined(ARCH_LOONGARCH64)
+
+static int strstart(const char *str, const char *pfx, const char **ptr)
+{
+    while (*pfx && *pfx == *str) {
+        pfx++;
+        str++;
+    }
+    if (!*pfx && ptr)
+        *ptr = str;
+    return !*pfx;
+}
+
+static int get_L3_size() {
+// TODO: Currently, the result obtained by using cpucfg to read the L3 cache
+// size of 3C5000 is abnormal. Temporary judgment is made by reading cpuinfo.
+#if 0
+    int ret = 0, id = 0x14;
+    __asm__ volatile (
+      "cpucfg %[ret], %[id]"
+      : [ret]"=r"(ret)
+      : [id]"r"(id)
+      : "memory"
+    );
+    return ((ret & 0xffff) + 1) * pow(2, ((ret >> 16) & 0xff)) * pow(2, ((ret >> 24) & 0x7f)) / 1024 / 1024;
+#endif
+    FILE *f = fopen("/proc/cpuinfo", "r");
+    char buf[200];
+    int size = 0;
+
+    if (!f)
+        return size;
+
+    while (fgets(buf, sizeof(buf), f)) {
+        /* Legacy kernel may not export MMI in ASEs implemented */
+        if (strstart(buf, "model name", NULL)) {
+            if (strstr(buf, "Loongson-3A5000"))
+                size = 16;
+	    else if (strstr(buf, "Loongson-3C5000L"))
+		size = 16;
+	    else if (strstr(buf, "Loongson-3C5000"))
+		size = 32;
+	    else if (strstr(buf, "Loongson-3D5000"))
+		size = 32;
+            break;
+        }
+    }
+    fclose(f);
+    return size;
+}
+
+void blas_set_parameter(void)
+{
+#if defined(LOONGSON3R5)
+    int L3_size = get_L3_size();
+    if (L3_size == 16) {
+	// 3A5000, 3C5000L
+	dgemm_r = 760;
+    } else if (L3_size == 32) {
+	// 3C5000, 3D5000
+	dgemm_r = 342;
+    }
+#endif
+}
+
+#endif
