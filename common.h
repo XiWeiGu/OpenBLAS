@@ -546,7 +546,7 @@ static __inline void blas_lock(volatile BLASULONG *address){
 #ifdef __NetBSD__
 #define MMAP_POLICY (MAP_PRIVATE | MAP_ANON)
 #else
-#define MMAP_POLICY (MAP_PRIVATE | MAP_ANONYMOUS)
+#define MMAP_POLICY (MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB)
 #endif
 
 #ifndef ASSEMBLER

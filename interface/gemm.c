@@ -524,12 +524,12 @@ void CNAME(enum CBLAS_ORDER order, enum CBLAS_TRANSPOSE TransA, enum CBLAS_TRANS
 //For Loongson servers, like the 3C5000 (featuring 16 cores), applying an
 //offset to the buffer is essential for minimizing cache conflicts and optimizing performance.
 #if defined(LOONGSON3R5) && !defined(NO_AFFINITY)
-  char model_name[128];
-  get_cpu_model(model_name);
-  if ((strstr(model_name, "3C5000") != NULL) || (strstr(model_name, "3D5000") != NULL))
-    sa = (XFLOAT *)((BLASLONG)buffer + (WhereAmI() & 0xf) * GEMM_OFFSET_A);
-  else
-    sa = (XFLOAT *)((BLASLONG)buffer + GEMM_OFFSET_A);
+  //char model_name[128];
+  //get_cpu_model(model_name);
+  //if ((strstr(model_name, "3C5000") != NULL) || (strstr(model_name, "3D5000") != NULL))
+  sa = (XFLOAT *)((BLASLONG)buffer + (WhereAmI() & 0xf) * GEMM_OFFSET_A);
+  //else
+  //  sa = (XFLOAT *)((BLASLONG)buffer + GEMM_OFFSET_A);
 #else
   sa = (XFLOAT *)((BLASLONG)buffer +GEMM_OFFSET_A);
 #endif
