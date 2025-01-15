@@ -1,4 +1,6 @@
 USE_GEMM3M = 0
+USE_TRMM = 1
+USE_TRSM = 1
 OS := $(shell uname)
 
 ifeq ($(ARCH), x86)

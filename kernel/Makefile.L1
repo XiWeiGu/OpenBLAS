@@ -524,13 +524,13 @@ CBLASOBJS	+= \
 	camax_k$(TSUFFIX).$(SUFFIX)  camin_k$(TSUFFIX).$(SUFFIX) icamax_k$(TSUFFIX).$(SUFFIX) icamin_k$(TSUFFIX).$(SUFFIX) \
 	casum_k$(TSUFFIX).$(SUFFIX) caxpy_k$(TSUFFIX).$(SUFFIX) caxpyc_k$(TSUFFIX).$(SUFFIX) ccopy_k$(TSUFFIX).$(SUFFIX) \
 	cdotc_k$(TSUFFIX).$(SUFFIX) cdotu_k$(TSUFFIX).$(SUFFIX) cnrm2_k$(TSUFFIX).$(SUFFIX) csrot_k$(TSUFFIX).$(SUFFIX) \
-	cscal_k$(TSUFFIX).$(SUFFIX) cswap_k$(TSUFFIX).$(SUFFIX) caxpby_k$(TSUFFIX).$(SUFFIX) csum_k$(TSUFFIX).$(SUFFIX)
+	cscal_k$(TSUFFIX).$(SUFFIX) cswap_k$(TSUFFIX).$(SUFFIX) caxpby_k$(TSUFFIX).$(SUFFIX) csum_k$(TSUFFIX).$(SUFFIX) #ctemp_k$(TSUFFIX).$(SUFFIX)
 
 ZBLASOBJS	+= \
 	 zamax_k$(TSUFFIX).$(SUFFIX)  zamin_k$(TSUFFIX).$(SUFFIX) izamax_k$(TSUFFIX).$(SUFFIX) izamin_k$(TSUFFIX).$(SUFFIX) \
 	zasum_k$(TSUFFIX).$(SUFFIX) zaxpy_k$(TSUFFIX).$(SUFFIX) zaxpyc_k$(TSUFFIX).$(SUFFIX) zcopy_k$(TSUFFIX).$(SUFFIX) \
 	zdotc_k$(TSUFFIX).$(SUFFIX) zdotu_k$(TSUFFIX).$(SUFFIX) znrm2_k$(TSUFFIX).$(SUFFIX) zdrot_k$(TSUFFIX).$(SUFFIX) \
-	zscal_k$(TSUFFIX).$(SUFFIX) zswap_k$(TSUFFIX).$(SUFFIX) zaxpby_k$(TSUFFIX).$(SUFFIX) zsum_k$(TSUFFIX).$(SUFFIX)
+	zscal_k$(TSUFFIX).$(SUFFIX) zswap_k$(TSUFFIX).$(SUFFIX) zaxpby_k$(TSUFFIX).$(SUFFIX) zsum_k$(TSUFFIX).$(SUFFIX) #ztemp_k$(TSUFFIX).$(SUFFIX)
 
 XBLASOBJS	+= \
 	 xamax_k$(TSUFFIX).$(SUFFIX)  xamin_k$(TSUFFIX).$(SUFFIX) ixamax_k$(TSUFFIX).$(SUFFIX) ixamin_k$(TSUFFIX).$(SUFFIX) \
@@ -865,8 +865,14 @@ $(KDIR)qscal_k$(TSUFFIX).$(SUFFIX)  $(KDIR)qscal_k$(TPSUFFIX).$(PSUFFIX)  : $(KE
 $(KDIR)cscal_k$(TSUFFIX).$(SUFFIX)  $(KDIR)cscal_k$(TPSUFFIX).$(PSUFFIX)  : $(KERNELDIR)/$(CSCALKERNEL)
 	$(CC) -c $(CFLAGS) -DCOMPLEX -UDOUBLE $< -o $@
 
+#$(KDIR)ctemp_k$(TSUFFIX).$(SUFFIX)  $(KDIR)ctemp_k$(TPSUFFIX).$(PSUFFIX)  : $(KERNELDIR)/$(CTEMPKERNEL)
+#	$(CC) -c $(CFLAGS) -UCOMPLEX -UDOUBLE $< -o $@
+
 $(KDIR)zscal_k$(TSUFFIX).$(SUFFIX)  $(KDIR)zscal_k$(TPSUFFIX).$(PSUFFIX)  : $(KERNELDIR)/$(ZSCALKERNEL)
 	$(CC) -c $(CFLAGS) -DCOMPLEX -DDOUBLE $< -o $@
+
+#$(KDIR)ztemp_k$(TSUFFIX).$(SUFFIX)  $(KDIR)ztemp_k$(TPSUFFIX).$(PSUFFIX)  : $(KERNELDIR)/$(ZTEMPKERNEL)
+#	$(CC) -c $(CFLAGS) -DCOMPLEX -DDOUBLE $< -o $@
 
 $(KDIR)xscal_k$(TSUFFIX).$(SUFFIX)  $(KDIR)xscal_k$(TPSUFFIX).$(PSUFFIX)  : $(KERNELDIR)/$(XSCALKERNEL)
 	$(CC) -c $(CFLAGS) -DCOMPLEX -DXDOUBLE $< -o $@
