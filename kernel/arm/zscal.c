@@ -38,12 +38,6 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include<stdio.h>
 #include "common.h"
 
-#if defined(DOUBLE)
-int ztemp_k(BLASLONG n, BLASLONG dummy0, BLASLONG dummy1, FLOAT da_r,FLOAT da_i, FLOAT *x, BLASLONG inc_x, FLOAT *y, BLASLONG inc_y, FLOAT *dummy, BLASLONG dummy2);
-#else
-int ctemp_k(BLASLONG n, BLASLONG dummy0, BLASLONG dummy1, FLOAT da_r,FLOAT da_i, FLOAT *x, BLASLONG inc_x, FLOAT *y, BLASLONG inc_y, FLOAT *dummy, BLASLONG dummy2);
-#endif
-
 int CNAME(BLASLONG n, BLASLONG dummy0, BLASLONG dummy1, FLOAT da_r,FLOAT da_i, FLOAT *x, BLASLONG inc_x, FLOAT *y, BLASLONG inc_y, FLOAT *dummy, BLASLONG dummy2)
 {
 	BLASLONG i=0;
@@ -58,23 +52,6 @@ int CNAME(BLASLONG n, BLASLONG dummy0, BLASLONG dummy1, FLOAT da_r,FLOAT da_i, F
 	inc_x2 = 2 * inc_x;
     FLOAT *xtemp0 = (FLOAT*)malloc(inc_x2 * sizeof(FLOAT) * n);
     FLOAT *xtemp1 = (FLOAT*)malloc(inc_x2 * sizeof(FLOAT) * n);
-#if defined(DOUBLE)
-#else
-    for ( i=0; i<n; i++ )
-    {
-        xtemp0[ip0] = x[ip0];
-        xtemp0[ip0+1] = x[ip0+1];
-        xtemp1[ip0] = x[ip0];
-        xtemp1[ip0+1] = x[ip0+1];
-        ip0 += inc_x2;
-    }
-#endif
-
-#if defined(DOUBLE)
-    ztemp_k(n, dummy0, dummy1, da_r, da_i, xtemp1, inc_x, y, inc_y, dummy, dummy2);
-#else
-    ctemp_k(n, dummy0, dummy1, da_r, da_i, xtemp1, inc_x, y, inc_y, dummy, dummy2);
-#endif
 
 	for ( i=0; i<n; i++ )
 	{
@@ -112,20 +89,6 @@ int CNAME(BLASLONG n, BLASLONG dummy0, BLASLONG dummy1, FLOAT da_r,FLOAT da_i, F
 		ip += inc_x2;
 	}
 
-#if defined(DOUBLE)
-#else
-    ip=0;
-    for (i = 0; i<n; i++) {
-        if(abs(xtemp1[ip] - x[ip]) > 0.000001 || abs(xtemp1[ip+1] - x[ip+1]) > 0.000001){
-            printf("real= %f, c= %f, lsx= %f, da_r= %f, da_i= %f, i= %d, n= %d, inc_x= %d\n ", xtemp0[ip], x[ip], xtemp1[ip], da_r, da_i, i, n, inc_x);
-            printf("image= %f, c= %f, lsx= %f, da_r= %f, da_i= %f, i= %d, n= %d, inc_x2= %d\n ", xtemp0[ip+1], x[ip+1], xtemp1[ip+1], da_r, da_i, i, n, inc_x2);
-            break;
-        }
-        ip += inc_x2;
-    }
-#endif
-    free(xtemp0);
-    free(xtemp1);
 	return(0);
 
 }
