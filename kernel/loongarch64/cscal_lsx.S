@@ -85,9 +85,9 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     bne INCX, TEMP, .L22
 
 .L11:
-    bge $r0, I, .L997
     CMPEQ  $fcc0, ALPHAR, a1
     CMPEQ  $fcc1, ALPHAI, a1
+    bge $r0, I, .L997
     bceqz $fcc0, .L13
     b .L14
     .align 3
@@ -201,10 +201,10 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     .align 3
 
 .L22:
-    bge $r0, I, .L997
-    move XX, X
     CMPEQ  $fcc0, ALPHAR, a1
     CMPEQ  $fcc1, ALPHAI, a1
+    bge $r0, I, .L997
+    move XX, X
     bceqz $fcc0, .L23
     b .L24
     .align 3
@@ -422,6 +422,16 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     andi I, N, 3
     bge $r0, I, .L999
     .align 3
+
+    bceqz $fcc0, .L998
+    bceqz $fcc1, .L998
+.L996:
+    addi.d I, I, -1
+    ST   a1, X, 0 * SIZE
+    ST   a1, X, 1 * SIZE
+    add.d X, X, INCX
+    blt $r0, I, .L996
+    b .L999
 
 .L998:
     LD   a1, X, 0 * SIZE
