@@ -48,13 +48,13 @@ DSCALKERNEL  = scal_lsx.S
 #CCOPYKERNEL =  ccopy_lsx.S
 #ZCOPYKERNEL =  ccopy_lsx.S
 #
-#SSWAPKERNEL =  swap_lsx.S
-#DSWAPKERNEL =  swap_lsx.S
+SSWAPKERNEL =  swap_lsx.S
+DSWAPKERNEL =  swap_lsx.S
 #
-#SAXPYKERNEL =  axpy_lsx.S
-#DAXPYKERNEL =  axpy_lsx.S
-#CAXPYKERNEL =  caxpy_lsx.S
-#ZAXPYKERNEL =  caxpy_lsx.S
+SAXPYKERNEL =  axpy_lsx.S
+DAXPYKERNEL =  axpy_lsx.S
+CAXPYKERNEL =  caxpy_lsx.S
+ZAXPYKERNEL =  caxpy_lsx.S
 
 #SDOTKERNEL   = ../generic/dot.c
 #DDOTKERNEL   = ../arm/dot.c
@@ -74,29 +74,29 @@ SCOPYKERNEL  = ../arm/copy.c
 DCOPYKERNEL  = ../arm/copy.c
 CCOPYKERNEL  = ../arm/zcopy.c
 ZCOPYKERNEL  = ../arm/zcopy.c
-SSWAPKERNEL  = ../arm/swap.c
-DSWAPKERNEL  = ../arm/swap.c
-SAXPYKERNEL  = ../arm/axpy.c
-DAXPYKERNEL  = ../arm/axpy.c
-CAXPYKERNEL  = ../arm/zaxpy.c
-ZAXPYKERNEL  = ../arm/zaxpy.c
+#SSWAPKERNEL  = ../arm/swap.c
+#DSWAPKERNEL  = ../arm/swap.c
+#SAXPYKERNEL  = ../arm/axpy.c
+#DAXPYKERNEL  = ../arm/axpy.c
+#CAXPYKERNEL  = ../arm/zaxpy.c
+#ZAXPYKERNEL  = ../arm/zaxpy.c
 
 #CTEMPKERNEL = cscal_lsx.S
 #ZTEMPKERNEL = cscal_lsx.S
 
 # dierci
-#SAXPBYKERNEL = axpby_lsx.S
-#DAXPBYKERNEL = axpby_lsx.S
-#CAXPBYKERNEL = caxpby_lsx.S
-#ZAXPBYKERNEL = caxpby_lsx.S
+SAXPBYKERNEL = axpby_lsx.S
+DAXPBYKERNEL = axpby_lsx.S
+CAXPBYKERNEL = caxpby_lsx.S
+ZAXPBYKERNEL = caxpby_lsx.S
 
-#SSUMKERNEL  =  sum_lsx.S
-#DSUMKERNEL  =  sum_lsx.S
+SSUMKERNEL  =  sum_lsx.S
+DSUMKERNEL  =  sum_lsx.S
 #
-#SASUMKERNEL =  asum_lsx.S
-#DASUMKERNEL =  asum_lsx.S
-#CASUMKERNEL =  casum_lsx.S
-#ZASUMKERNEL =  casum_lsx.S
+SASUMKERNEL =  asum_lsx.S
+DASUMKERNEL =  asum_lsx.S
+CASUMKERNEL =  casum_lsx.S
+ZASUMKERNEL =  casum_lsx.S
 #
 SROTKERNEL  =  rot_lsx.S
 DROTKERNEL  =  rot_lsx.S
@@ -117,12 +117,12 @@ ZSUMKERNEL = csum_lsx.S
 SGEMVNKERNEL = sgemv_n_lsx.S
 SGEMVTKERNEL = sgemv_t_lsx.S
 
-SSUMKERNEL   = ../arm/sum.c
-DSUMKERNEL   = ../arm/sum.c
-SASUMKERNEL  = ../arm/asum.c
-DASUMKERNEL  = ../arm/asum.c
-CASUMKERNEL  = ../arm/zasum.c
-ZASUMKERNEL  = ../arm/zasum.c
+#SSUMKERNEL   = ../arm/sum.c
+#DSUMKERNEL   = ../arm/sum.c
+#SASUMKERNEL  = ../arm/asum.c
+#DASUMKERNEL  = ../arm/asum.c#
+#CASUMKERNEL  = ../arm/zasum.c
+#ZASUMKERNEL  = ../arm/zasum.c
 #SROTKERNEL   = ../arm/rot.c
 #DROTKERNEL   = ../arm/rot.c
 #CROTKERNEL   = ../arm/zrot.c
@@ -156,7 +156,7 @@ DSYMV_L_KERNEL = dsymv_L_lsx.S
 #DSYMV_U_KERNEL =  ../generic/symv_k.c
 #DSYMV_L_KERNEL =  ../generic/symv_k.c
 
-DGEMMKERNEL    = dgemm_kernel_8x4.S
+DGEMMKERNEL    = dgemm_kernel_8x4.S#
 DGEMMINCOPY    = dgemm_ncopy_8_lsx.S
 DGEMMITCOPY    = dgemm_tcopy_8_lsx.S
 DGEMMONCOPY    = dgemm_ncopy_4_lsx.S
