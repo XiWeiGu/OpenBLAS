@@ -52,18 +52,32 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 FLOAT CNAME(BLASLONG n, FLOAT *x, BLASLONG inc_x)
 {
 	BLASLONG i=0;
+    BLASLONG j=0;
 	FLOAT scale = 0.0;
-	FLOAT ssq   = 1.0;
+	FLOAT ssq   = 0.0;
 	FLOAT absxi = 0.0;
+    FLOAT max = 0.0;
 
 
 	if (n <= 0 || inc_x == 0) return(0.0);
 	if ( n == 1 ) return( ABS(x[0]) );
 
 	n *= inc_x;
+    // Find Max value
+	while(abs(j) < abs(n))
+	{
+        if (max < ABS(x[j])) max = ABS(x[j]);
+
+		j += inc_x;
+	}
+
+    if (max == 0.0) return (0.0);
+    
+
 	while(abs(i) < abs(n))
 	{
 
+#if 0
 		if ( x[i] != 0.0 )
 		{
 			absxi = ABS( x[i] );
@@ -78,9 +92,11 @@ FLOAT CNAME(BLASLONG n, FLOAT *x, BLASLONG inc_x)
 			}
 
 		}
+#endif
+        ssq += (x[i] / max) * (x[i] / max);
 		i += inc_x;
 	}
-	scale = scale * sqrt( ssq );
+	scale =  max * sqrt( ssq );
 	return(scale);
 
 }
