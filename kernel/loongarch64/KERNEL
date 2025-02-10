@@ -235,7 +235,7 @@ ifndef ZGEMM3MKERNEL
 ZGEMM3MKERNEL    =  zgemm3m_kernel.S
 endif
 
-DSDOTKERNEL  = dot.S
+#DSDOTKERNEL  = dot.S
 
 ifndef SROTMKERNEL
 SROTMKERNEL = ../generic/rotm.c

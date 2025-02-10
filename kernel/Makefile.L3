@@ -1,6 +1,8 @@
 USE_GEMM3M = 0
 OS := $(shell uname)
 
+USE_TRMM = 1
+
 ifeq ($(ARCH), x86)
 USE_GEMM3M = 1
 endif
